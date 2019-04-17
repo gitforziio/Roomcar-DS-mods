@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------------------------------------------------
-name = " A Big Bag (大背包)"
+name = " A Big Bag (大背包)[DEV]"
 author = "Roomcar"
 version = "1.0.1"--DEV
 description = "更新啦！请检查配置选项以免遇到问题！\n\nA 8x8 Big Bag.\n8x8的大背包。\nMake things fresh again.\n可选：让物品和食物恢复新鲜。\nGet full stack of things.\n可选：让物品自动堆叠至最大。\nGive items for building for free.\n可选：建造缺少物品时自动获取。\n可选：保命微光。"

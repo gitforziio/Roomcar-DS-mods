@@ -1,7 +1,16 @@
+--------------------------------------------------------------------------
+
 require "prefabutil"
-require "recipe"
 require "modutil"
 
+--------------------
+require "recipe"
+
+--------------------
+
+local cooking = require("cooking")
+
+--------------------
 
 local assets=
 {
@@ -11,7 +20,7 @@ local assets=
     Asset("ATLAS", "images/bigbagbg.xml"),
 }
 
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 local function giveitems(inst, data)
     if data.owner.components.inventory and data.recipe then
@@ -25,6 +34,8 @@ local function giveitems(inst, data)
         end
     end
 end
+
+--------------------
 
 local function onopen(inst)
     inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_open")
@@ -68,26 +79,51 @@ local function onclose(inst)
     end
 end
 
+--------------------
+
 local function onequip(inst, owner)
+
+    -- light
     if TUNING.ROOMCAR_BIGBAG_LIGHT then
         inst.Light:Enable(true)
     end
+
+    -- give
     if TUNING.ROOMCAR_BIGBAG_GIVE then
         owner:ListenForEvent("cantbuild", giveitems)
     end
-    owner.AnimState:OverrideSymbol("swap_body", "swap_bigbag", "backpack")
-    owner.AnimState:OverrideSymbol("swap_body", "swap_bigbag", "swap_body")
+
+    -- original
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("equipskinneditem", inst:GetSkinName())
+        owner.AnimState:OverrideItemSkinSymbol("bigbag", skin_build, "bigbag", inst.GUID, "swap_backpack" )
+        owner.AnimState:OverrideItemSkinSymbol("swap_body", skin_build, "swap_body", inst.GUID, "swap_backpack" )
+    else
+        owner.AnimState:OverrideSymbol("swap_body", "swap_bigbag", "backpack")
+        owner.AnimState:OverrideSymbol("swap_body", "swap_bigbag", "swap_body")
+    end
     if inst.components.container ~= nil then
         inst.components.container:Open(owner)
     end
 end
 
 local function onunequip(inst, owner)
+
+    -- light
     if TUNING.ROOMCAR_BIGBAG_LIGHT then
         inst.Light:Enable(false)
     end
+
+    -- give
     if TUNING.ROOMCAR_BIGBAG_GIVE then
         owner:RemoveEventCallback("cantbuild", giveitems)
+    end
+
+    -- original
+    local skin_build = inst:GetSkinBuild()
+    if skin_build ~= nil then
+        owner:PushEvent("unequipskinneditem", inst:GetSkinName())
     end
     owner.AnimState:ClearOverrideSymbol("swap_body")
     owner.AnimState:ClearOverrideSymbol("backpack")
@@ -95,6 +131,8 @@ local function onunequip(inst, owner)
         inst.components.container:Close(owner)
     end
 end
+
+--------------------------------------------------------------------------
 
 local function fn()
     local inst = CreateEntity()
@@ -107,25 +145,25 @@ local function fn()
 
     MakeInventoryPhysics(inst)
 
+    inst.MiniMapEntity:SetIcon("bigbag.tex")
+
     if TUNING.ROOMCAR_BIGBAG_LIGHT then
         inst.entity:AddLight()
-        local light = inst.entity:AddLight()
+        inst.Light:Enable(false)
         inst.Light:SetRadius(0.25)
         inst.Light:SetFalloff(0.5)
         inst.Light:SetIntensity(0.25)
         inst.Light:SetColour(255/255,255/255,255/255)
     end
 
-    inst.AnimState:SetBank("backpack1")
-    inst.AnimState:SetBuild("swap_bigbag")
-    inst.AnimState:PlayAnimation("anim")
-
     inst:AddTag("fridge")
     inst:AddTag("nocool")
     inst:AddTag("umbrella")
     inst:AddTag("bigbag")
 
-    inst.MiniMapEntity:SetIcon("bigbag.tex")
+    inst.AnimState:SetBank("backpack1")
+    inst.AnimState:SetBuild("swap_bigbag")
+    inst.AnimState:PlayAnimation("anim")
 
     inst.foleysound = "dontstarve/movement/foley/krampuspack"
 
@@ -134,6 +172,11 @@ local function fn()
     if not TheWorld.ismastersim then
         return inst
     end
+
+    inst:AddComponent("container")
+    inst.components.container:WidgetSetup("bigbag")
+    inst.components.container.onopenfn = onopen
+    inst.components.container.onclosefn = onclose
 
     inst:AddComponent("inspectable")
 
@@ -147,24 +190,20 @@ local function fn()
     inst.components.equippable:SetOnUnequip(onunequip)
     inst.components.equippable.walkspeedmult = TUNING.ROOMCAR_BIGBAG_WALKSPEED
 
-    inst:AddComponent("container")
-    inst.components.container:WidgetSetup("bigbag")
-    inst.components.container.onopenfn = onopen
-    inst.components.container.onclosefn = onclose
-
     return inst
 end
 
-------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 if TUNING.ROOMCAR_BIGBAG_LANG == 1 then
-    --local STRINGS=GLOBAL.STRINGS
+    -- local STRINGS=GLOBAL.STRINGS
 
     STRINGS.NAMES.BIGBAG                                     = "大背包"
     STRINGS.RECIPE_DESC.BIGBAG                               = "一个好大好大的背包！"
 
     STRINGS.CHARACTERS.GENERIC.DESCRIBE.BIGBAG               = "这个包也太大了吧！"
+
     STRINGS.CHARACTERS.WX78.DESCRIBE.BIGBAG                  = "=-!-=- 大 - 大 - 大 -=-!-="
     STRINGS.CHARACTERS.WEBBER.DESCRIBE.BIGBAG                = "~~ 好棒的包，我好喜欢! ~~"
     STRINGS.CHARACTERS.WILLOW.DESCRIBE.BIGBAG                = "我可不会烧掉这个包。"
@@ -175,12 +214,13 @@ if TUNING.ROOMCAR_BIGBAG_LANG == 1 then
     STRINGS.CHARACTERS.WAXWELL.DESCRIBE.BIGBAG               = "这包很酷，很适合我。"
     STRINGS.CHARACTERS.WATHGRITHR.DESCRIBE.BIGBAG            = "这包太棒啦！"
 else
-    --local STRINGS=GLOBAL.STRINGS
+    -- local STRINGS=GLOBAL.STRINGS
 
     STRINGS.NAMES.BIGBAG                                     = "Big Bag"
     STRINGS.RECIPE_DESC.BIGBAG                               = "A really big bag."
 
     STRINGS.CHARACTERS.GENERIC.DESCRIBE.BIGBAG               = "This bag is really big!"
+
     STRINGS.CHARACTERS.WX78.DESCRIBE.BIGBAG                  = "=-!-=- BIG - BAG -=-!-="
     STRINGS.CHARACTERS.WEBBER.DESCRIBE.BIGBAG                = "~~ Nice bag, I LOVE IT! ~~"
     STRINGS.CHARACTERS.WILLOW.DESCRIBE.BIGBAG                = "I wouldn't light this bag."
@@ -192,7 +232,7 @@ else
     STRINGS.CHARACTERS.WATHGRITHR.DESCRIBE.BIGBAG            = "Wonderful bag!"
 end
 
-------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 return Prefab( "common/inventory/bigbag", fn, assets)

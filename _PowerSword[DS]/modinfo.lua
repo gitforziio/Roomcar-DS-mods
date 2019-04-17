@@ -20,8 +20,8 @@ hamlet_compatible = true
 --priority = 4
 
 -- This lets other players know if your mod is out of date, update it to match the current version in the game
--- api_version_dst = 10
 api_version = 6
+-- api_version_dst = 10
 
 -- Can specify a custom icon for this mod!
 icon_atlas = "modicon.xml"

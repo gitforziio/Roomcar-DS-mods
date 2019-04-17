@@ -1,5 +1,5 @@
 -- This information tells other players more about the mod
-name = "_A_Powerful_Sword_"
+name = " A Powerful Sword [DEV]"
 description = "A powerful sword that have many usages."
 author = "Roomcar"
 version = "0.5.0"
@@ -20,8 +20,8 @@ hamlet_compatible = false
 --priority = 4
 
 -- This lets other players know if your mod is out of date, update it to match the current version in the game
-api_version_dst = 10
 api_version = 6
+api_version_dst = 10
 
 -- Can specify a custom icon for this mod!
 icon_atlas = "ziiosword.xml"
