@@ -22,13 +22,14 @@ local assets=
 
 --------------------------------------------------------------------------
 
-local function giveitems(inst, data)
-    if data.owner.components.inventory and data.recipe then
-        for ik, iv in pairs(data.recipe.ingredients) do
-            if not data.owner.components.inventory:Has(iv.type, iv.amount) then
+local function giveitems(inst, eventdata)
+    -- 参考“owner:PushEvent("cantbuild", { owner = owner, recipe = recipe })”
+    if eventdata.owner.components.inventory and eventdata.recipe then
+        for ik, iv in pairs(eventdata.recipe.ingredients) do
+            if not eventdata.owner.components.inventory:Has(iv.type, iv.amount) then
                 for i = 1, iv.amount do
                     local item = SpawnPrefab(iv.type)
-                    data.owner.components.inventory:GiveItem(item)
+                    eventdata.owner.components.inventory:GiveItem(item)
                 end
             end
         end
@@ -81,7 +82,14 @@ end
 
 --------------------
 
-local function onequip(inst, owner)
+local function onequip(inst, equiper)
+
+    print("    BIGBAG    onequip")
+    if TUNING.ROOMCAR_BIGBAG_GIVE then
+        print("    BIGBAG    ROOMCAR_BIGBAG_GIVE=true")
+    else
+        print("    BIGBAG    ROOMCAR_BIGBAG_GIVE=false")
+    end
 
     -- light
     if TUNING.ROOMCAR_BIGBAG_LIGHT then
@@ -90,25 +98,28 @@ local function onequip(inst, owner)
 
     -- give
     if TUNING.ROOMCAR_BIGBAG_GIVE then
-        owner:ListenForEvent("cantbuild", giveitems)
+        equiper:ListenForEvent("cantbuild", giveitems)
+        print("    BIGBAG    equiper:ListenForEvent(\"cantbuild\", giveitems)")
     end
 
     -- original
     local skin_build = inst:GetSkinBuild()
     if skin_build ~= nil then
-        owner:PushEvent("equipskinneditem", inst:GetSkinName())
-        owner.AnimState:OverrideItemSkinSymbol("bigbag", skin_build, "bigbag", inst.GUID, "swap_backpack" )
-        owner.AnimState:OverrideItemSkinSymbol("swap_body", skin_build, "swap_body", inst.GUID, "swap_backpack" )
+        equiper:PushEvent("equipskinneditem", inst:GetSkinName())
+        equiper.AnimState:OverrideItemSkinSymbol("bigbag", skin_build, "bigbag", inst.GUID, "swap_backpack" )
+        equiper.AnimState:OverrideItemSkinSymbol("swap_body", skin_build, "swap_body", inst.GUID, "swap_backpack" )
     else
-        owner.AnimState:OverrideSymbol("swap_body", "swap_bigbag", "backpack")
-        owner.AnimState:OverrideSymbol("swap_body", "swap_bigbag", "swap_body")
+        equiper.AnimState:OverrideSymbol("swap_body", "swap_bigbag", "backpack")
+        equiper.AnimState:OverrideSymbol("swap_body", "swap_bigbag", "swap_body")
     end
     if inst.components.container ~= nil then
-        inst.components.container:Open(owner)
+        inst.components.container:Open(equiper)
     end
 end
 
-local function onunequip(inst, owner)
+local function onunequip(inst, equiper)
+
+    print("    BIGBAG    onunequip")
 
     -- light
     if TUNING.ROOMCAR_BIGBAG_LIGHT then
@@ -117,18 +128,19 @@ local function onunequip(inst, owner)
 
     -- give
     if TUNING.ROOMCAR_BIGBAG_GIVE then
-        owner:RemoveEventCallback("cantbuild", giveitems)
+        equiper:RemoveEventCallback("cantbuild", giveitems)
+        print("    BIGBAG    equiper:RemoveEventCallback(\"cantbuild\", giveitems)")
     end
 
     -- original
     local skin_build = inst:GetSkinBuild()
     if skin_build ~= nil then
-        owner:PushEvent("unequipskinneditem", inst:GetSkinName())
+        equiper:PushEvent("unequipskinneditem", inst:GetSkinName())
     end
-    owner.AnimState:ClearOverrideSymbol("swap_body")
-    owner.AnimState:ClearOverrideSymbol("backpack")
+    equiper.AnimState:ClearOverrideSymbol("swap_body")
+    equiper.AnimState:ClearOverrideSymbol("backpack")
     if inst.components.container ~= nil then
-        inst.components.container:Close(owner)
+        inst.components.container:Close(equiper)
     end
 end
 
@@ -141,7 +153,14 @@ local function fn()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
     inst.entity:AddMiniMapEntity()
+    --------------------
     inst.entity:AddNetwork()
+    -- This needs to be in any entity that you want to create on the server 
+    -- and have it show up for all players. 
+    -- Most things have this, but in a few cases you want things to 
+    -- only exist on the server (e.g. meteorspawners, which are invisible), 
+    -- and in some very rare cases you may want to create things independently on each client.
+    --------------------
 
     MakeInventoryPhysics(inst)
 
@@ -167,11 +186,26 @@ local function fn()
 
     inst.foleysound = "dontstarve/movement/foley/krampuspack"
 
+    --------------------
     inst.entity:SetPristine()
+    -- This basically says "everything above this was done on both the client or the server, 
+    -- so don't bother networking any of that". 
+    -- This reduces a bit of the bandwidth used by creating entities. 
+    -- I can't think of a case where you wouldn't want this immediately 
+    -- after the "if not TheWorld.ismastersim then return inst end" part, 
+    -- which is where you'll see it in the game's code.
+    --------------------
 
+    --------------------
     if not TheWorld.ismastersim then
         return inst
     end
+    -- This is really important for almost all prefabs. 
+    -- This essentially says "if this is running on the client, stop here". 
+    -- Almost all components should only be created on the server 
+    -- (the really important ones will get replicated to the client through the replica system). 
+    -- Visual things and tags that will always be added can go above this, though.
+    --------------------
 
     inst:AddComponent("container")
     inst.components.container:WidgetSetup("bigbag")

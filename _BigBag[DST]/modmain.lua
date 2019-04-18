@@ -1,10 +1,11 @@
 local Vector3 = GLOBAL.Vector3
 local require = GLOBAL.require
 
-print("Big Bag mod Loading...")
+print("    BIGBAG    MOD Loading")
 
 --------------------------------------------------------------------------------------------------------------------------
 -- [Prefab Files]
+--------------------
 
 PrefabFiles = {
 	"bigbag",
@@ -12,6 +13,7 @@ PrefabFiles = {
 
 --------------------------------------------------------------------------------------------------------------------------
 -- [Assets]
+--------------------
 
 local assets=
 {
@@ -32,6 +34,7 @@ local assets=
 
 --------------------------------------------------------------------------------------------------------------------------
 -- [TUNING]
+--------------------
 
 TUNING.ROOMCAR_BIGBAG_LANG = GetModConfigData("LANG")
 TUNING.ROOMCAR_BIGBAG_GIVE = GetModConfigData("GIVE")
@@ -43,22 +46,25 @@ TUNING.ROOMCAR_BIGBAG_WALKSPEED = GetModConfigData("WALKSPEED")
 
 --------------------------------------------------------------------------------------------------------------------------
 -- [Miniap Icon]
+--------------------
 
 AddMinimapAtlas("minimap/bigbag.xml")
 
 --------------------------------------------------------------------------------------------------------------------------
 -- [Global Strings]
+--------------------
 
 local Ingredient = GLOBAL.Ingredient
 
 --------------------------------------------------------------------------------------------------------------------------
 -- [Custom Recipe]
+--------------------
 
 local rcp = RcpN
 local tec = GLOBAL.TECH.NONE
 local RcpType = TUNING.ROOMCAR_BIGBAG_RECIPE
 
-local RcpPlus = {Ingredient("purplegem", 5)}
+local RcpPlus = {Ingredient("purplegem", 1)}
 
 local RcpVC = {Ingredient("cutgrass", 1)}
 local RcpC = {Ingredient("pigskin", 5)}
@@ -83,7 +89,7 @@ elseif  RcpType == 5 then
     tec = GLOBAL.TECH.MAGIC_TWO
 end
 
-if TUNING.ROOMCAR_BIGBAG_GIVE then
+if TUNING.ROOMCAR_BIGBAG_FRESH and TUNING.ROOMCAR_BIGBAG_STACK then
     for _,v in ipairs(RcpPlus) do
         table.insert(rcp,v)
     end
@@ -112,6 +118,7 @@ nil, -- builder_tag
 
 --------------------------------------------------------------------------------------------------------------------------
 -- [[set container]]
+--------------------
 
 --------------------------------------------------------------------------
 
@@ -123,17 +130,19 @@ local params = {}
 -- 但我们直接引入了 containers，所以不需要再写这条了。
 local containers = require("containers")
 
---------------------------------------------------------------------------
+--------------------
 
 -- 备份原本的 containers.widgetsetup （后面又有了，冗余了）
 -- local widgetsetup_Base = containers.widgetsetup or function() return true end
 
---------------------------------------------------------------------------
+--------------------
 
 -- 应该是冗余的： local containers = GLOBAL.require "containers"
 
---------------------------------------------------------------------------
+--------------------
+
 -- -- 这段是原始的containers的widgetsetup，供参考，冗余。
+
 -- function containers.widgetsetup(container, prefab, data)
 --     local t = data or params[prefab or container.inst.prefab]
 --     if t ~= nil then
@@ -143,16 +152,17 @@ local containers = require("containers")
 --         container:SetNumSlots(container.widget.slotpos ~= nil and #container.widget.slotpos or 0)
 --     end
 -- end
---------------------------------------------------------------------------
+
+--------------------
 
 -- 备份原本的 containers.widgetsetup（“or”后面的大概是保险的冗余的写法）
 local containers_widgetsetup = containers.widgetsetup or function() return true end
 
---------------------------------------------------------------------------
+--------------------
 
 -- 替代原有的 containers.widgetsetup 函数
 
-function containers.widgetsetup(container, prefab, data)
+function containers.widgetsetup(container, prefab, data, ...)
     local tt = prefab or container.inst.prefab
     if tt == "bigbag" then
         -- 针对bigbag做特殊处理（其实并不特殊，可能是我在别的mod里抄来的）
@@ -165,7 +175,7 @@ function containers.widgetsetup(container, prefab, data)
         end
     else
         -- 针对非bigbag的容器，用原始的函数来处理
-        return containers_widgetsetup(container, prefab, data)
+        return containers_widgetsetup(container, prefab, data, ...)
     end
 end
 
@@ -218,7 +228,7 @@ end
 --[[ 假装这儿有另一个容器 ]]
 --------------------------------------------------------------------------
 
--- -- here should be code of another container
+-- -- here should be code for another container
 
 --------------------------------------------------------------------------
 
@@ -233,10 +243,10 @@ end
 --------------------------------------------------------------------------
 
 -- 此处，containers.lua中还有一句“return containers”，
--- 但MOD不需要这样做。
+-- 但MOD不需要这样做吧。
 
 --------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------
 
-print("Big Bag mod DONE")
+print("    BIGBAG    MOD DONE")

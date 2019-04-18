@@ -1,8 +1,13 @@
 --------------------------------------------------------------------------------------------------------------------------
-name = " A Big Bag (大背包)[DEV]"
+name = " A Big Bag (大背包) 1.5"
 author = "Roomcar"
-version = "1.0.1"--DEV
-description = "更新啦！请检查配置选项以免遇到问题！\n\nA 8x8 Big Bag.\n8x8的大背包。\nMake things fresh again.\n可选：让物品和食物恢复新鲜。\nGet full stack of things.\n可选：让物品自动堆叠至最大。\nGive items for building for free.\n可选：建造缺少物品时自动获取。\n可选：保命微光。"
+version = "1.5.0"
+description = "Updated at 更新于2019-04-18。\n\n\
+A 8x8 Big Bag.\n8x8的大背包。\n\
+Make things fresh again.\n可选：让物品和食物恢复新鲜。\n\
+Get full stack of things.\n可选：让物品自动堆叠至最大。\n\
+Light to survive in the dark.\n可选：保命微光。\n\
+Give items for building for free.(!!! SEVER ONLY !!!)\n可选：建造缺少物品时自动获取。（仅限服务器端）"
 
 api_version = 10
 dst_compatible = true
@@ -86,7 +91,7 @@ configuration_options = {
 	{
 		name = "GIVE",
 		label = "Give Items (获得物品)",
-		hover = "Give Items If Can't Build Something.",
+		hover = "!!! SEVER ONLY !!!  Give Items Directly If Can't Build Something. !!! SEVER ONLY !!!",
 		options = {
 			{ description = "Off", data = false, },
 			{ description = "On", data = true, },
